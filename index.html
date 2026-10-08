@@ -135,6 +135,8 @@ h3.sub{font-size:1.05rem;margin:16px 0 8px;color:var(--soft)}
 .pl svg{width:56px;height:56px;flex:none}
 .pl b{display:block;font-size:1.2rem}.pl small{color:var(--soft)}
 .pl em{margin-left:auto;font-style:normal;font-weight:700;color:#B07800;font-size:.85rem}
+.backtop{position:sticky;top:6px;z-index:5;margin-top:10px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;
+  background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:9px 16px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .coinpop{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:2rem;color:#FFD54A;margin:0}
 h1{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:2.4rem;line-height:1.05;margin:18px 0 6px}
 h2{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:1.5rem;margin:30px 0 10px;display:flex;align-items:center;gap:10px}
@@ -146,7 +148,7 @@ p.lead{color:var(--soft);margin:0 0 8px}
 .tile:hover{border-color:currentColor}
 .tile .ico{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
   font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:1.4rem;color:#fff}
-.tile.math .ico{background:var(--math)} .tile.fr .ico{background:var(--fr)}
+.tile.math .ico{background:var(--math)} .tile.fr .ico{background:var(--fr)} .tile.sem .ico{background:#E8730C;font-size:1.15rem}
 .tile b{display:block;line-height:1.2}
 .tile small{color:var(--soft);font-size:.82rem;display:block;line-height:1.3}
 .tile .best{color:var(--star);font-weight:700}
@@ -155,7 +157,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 /* Quiz */
 .top{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
 .tag{font-weight:700;color:#fff;border-radius:999px;padding:2px 12px;font-size:.9rem}
-.tag.math{background:var(--math)} .tag.fr{background:var(--fr)}
+.tag.math{background:var(--math)} .tag.fr{background:var(--fr)} .tag.sem{background:#E8730C}
 .dots{display:flex;gap:5px;flex-wrap:wrap}
 .dots i{width:11px;height:11px;border-radius:50%;background:var(--line);display:block}
 .dots i.ok{background:var(--ok)} .dots i.bad{background:var(--bad)} .dots i.now{outline:2px solid var(--ink)}
@@ -276,7 +278,7 @@ async function cloudInit(){try{
 /* ---------- Joueurs ---------- */
 function players(){
   if(canSpeak)speechSynthesis.cancel();
-  app.innerHTML=`<h1>Qui joue?</h1><p class="lead">Chaque joueur a ses propres pièces, coffres et squishies.</p>
+  app.innerHTML=`<button class="backtop" type="button">← Retour aux exercices</button><h1>Qui joue?</h1><p class="lead">Chaque joueur a ses propres pièces, coffres et squishies.</p>
   <div class="plist">${P.list.map(id=>{const d=P.data[id]||{},fav=(d.owned||[]).map(x=>SQ.find(q=>q.id===x)).filter(Boolean).pop()||SQ[0];
     return `<button class="pl ${id===P.cur?'cur':''}" data-id="${id}">${squish(fav)}<span><b>${esc(d.name||'Sans nom')}</b><small>★ ${d.stars||0} · 🪙 ${d.gold||0} · ${(d.owned||[]).length} squishies</small></span>${id===P.cur?'<em>En jeu</em>':''}</button>`}).join('')}</div>
   <h2>Nouveau joueur</h2>
@@ -372,6 +374,54 @@ function genAlpha(){const pool=uniq(mots().filter(w=>!/\s/.test(w)));
   const ans=[...ws].sort((a,b)=>a.localeCompare(b,'fr',{sensitivity:'base'}))[0];
   return{q:`Quel mot vient en premier dans l'ordre alphabétique?`,kind:'choice',opts:ws,ans}}
 
+/* ---------- Semaine du 28 sept au 9 oct ---------- */
+const VOC56=[["absolument","adv"],["ailleurs","adv"],["au lieu de","loc"],["justement","adv"],["parfaitement","adv"],["endroit","m"],["front","m"],["mouvement","m"],["nord","m"],["pont","m"],
+["roue","f"],["sang","m"],["toit","m"],["annoncer","v"],["bicyclette","f"],["continuer","v"],["cuisine","f"],["écouter","v"],["lancer","v"],["naissance","f"],["âge","m"],
+["assez","adv"],["occuper","v"],["pièce","f"],["raconter","v"],["secouer","v"],["argent","m"],["danger","m"],["gagner","v"],["gorge","f"],["goutte","f"],["guerre","f"],["langue","f"]];
+function fautes(w){const R=[[/ss/,'s'],[/tt/,'t'],[/ll/,'l'],[/ent$/,'ant'],[/ement$/,'emant'],[/é/,'è'],[/é/,'er'],[/è/,'é'],[/â/,'a'],[/ê/,'e'],[/c([ei])/,'s$1'],[/g([ei])/,'j$1'],
+  [/gu/,'g'],[/eu/,'eux'],[/au/,'o'],[/ai/,'è'],[/oi/,'oa'],[/an/,'en'],[/en/,'an'],[/on/,'om'],[/y/,'i'],[/qu/,'k'],[/([^e])t$/,'$1'],[/d$/,''],[/g$/,''],[/s$/,''],[/er$/,'é'],[/e$/,''],[/ce$/,'se'],[/ou/,'oo'],[/ss/,'c']];
+  return uniq(shuffle(R).map(([a,b])=>w.replace(a,b)).filter(x=>x!==w))}
+function genSDict(){const w=pick(VOC56)[0];return{q:'',kind:'text',ans:w,speak:w}}
+function genSMots(){const r=Math.random();
+  if(r<.45){const[w]=pick(VOC56.filter(x=>!/\s/.test(x[0])));const f=fautes(w).slice(0,2);if(f.length<2)return genSDict();
+    return{q:`Quel mot est bien écrit?`,kind:'choice',opts:shuffle([w,...f]),ans:w}}
+  if(r<.75){const[w,g]=pick(VOC56.filter(x=>x[1]==='m'||x[1]==='f'));return{q:`${BL} ${w}<span class="inst">Un ou une?</span>`,kind:'choice',opts:['un','une'],keep:1,ans:g==='m'?'un':'une'}}
+  const[w,t]=pick(VOC56.filter(x=>['m','f','v','adv'].includes(x[1])));const ans={m:'un nom',f:'un nom',v:'un verbe',adv:'un adverbe'}[t];
+  return{q:`« ${w} » est…`,kind:'choice',opts:['un nom','un verbe','un adverbe'],keep:1,ans}}
+const EUR=[["la chal","eur"],["une err","eur"],["un rong","eur"],["la haut","eur"],["une fl","eur"],["la p","eur"],["la coul","eur"],["une od","eur"],["la doul","eur"],["la long","eur"],
+["un mot","eur"],["un chant","eur"],["le bonh","eur"],["la larg","eur"],["une h","eure"],["la dem","eure"],["du b","eurre"],["une aut","eure"],["une doct","eure"],["une profess","eure"]];
+function genSEur(){const[a,b]=pick(EUR);return{q:`${a}${BL}<span class="inst">🐱 La règle de la peur : eur, eure ou eurre?</span>`,kind:'choice',opts:['eur','eure','eurre'],keep:1,ans:b}}
+const GN=[["Clara est partie.","Clara","nom seul"],["Léa chante.","Léa","nom seul"],["Noah court vite.","Noah","nom seul"],["Félix dort.","Félix","nom seul"],
+["Mon frère joue dehors.","Mon frère","déterminant + nom"],["Le chat dort.","Le chat","déterminant + nom"],["Ma sœur lit un livre.","Ma sœur","déterminant + nom"],["Les oiseaux chantent.","Les oiseaux","déterminant + nom"],
+["Nous avons passé une journée agréable.","une journée agréable","déterminant + nom + adjectif"],["J’ai vu un chien noir.","un chien noir","déterminant + nom + adjectif"],["Elle porte une robe bleue.","une robe bleue","déterminant + nom + adjectif"],["Il a une bicyclette rouge.","une bicyclette rouge","déterminant + nom + adjectif"],
+["Elle a vu une grosse baleine.","une grosse baleine","déterminant + adjectif + nom"],["Un petit chat dort.","Un petit chat","déterminant + adjectif + nom"],["J’ai mangé une belle pomme.","une belle pomme","déterminant + adjectif + nom"],["Le grand pont est long.","Le grand pont","déterminant + adjectif + nom"]];
+const GNN={"une journée agréable":"journée","un chien noir":"chien","une robe bleue":"robe","une bicyclette rouge":"bicyclette","une grosse baleine":"baleine","Un petit chat":"chat","une belle pomme":"pomme","Le grand pont":"pont","Mon frère":"frère","Le chat":"chat","Ma sœur":"sœur","Les oiseaux":"oiseaux"};
+function genSGN(){const[ph,gn,t]=pick(GN);const u=ph.replace(gn,`<u>${gn}</u>`);
+  if(GNN[gn]&&Math.random()<.4)return{q:`${u}<span class="inst">Quel est le noyau (le nom) du groupe souligné?</span>`,kind:'choice',opts:shuffle(gn.split(' ')),ans:GNN[gn]};
+  return{q:`${u}<span class="inst">Comment est construit le groupe du nom souligné?</span>`,kind:'choice',opts:["nom seul","déterminant + nom","déterminant + nom + adjectif","déterminant + adjectif + nom"],keep:1,ans:t}}
+const AA=[["Mia "+BL+" une bicyclette.","a"],["Je vais "+BL+" la cuisine.","à"],["Il "+BL+" mal à la gorge.","a"],["Nous allons "+BL+" l'endroit secret.","à"],["Léo "+BL+" gagné de l'argent.","a"],
+["Elle parle "+BL+" sa sœur.","à"],["Mon père "+BL+" quarante ans.","a"],["On joue "+BL+" la balle.","à"],["Il "+BL+" une bosse au front.","a"],["Je suis "+BL+" la maison.","à"],["Elle "+BL+" raconté une histoire.","a"],
+["Le chat monte "+BL+" l'arbre.","à"],["Zoé "+BL+" perdu une roue.","a"],["Je pense "+BL+" toi.","à"],["Papa "+BL+" lancé le ballon.","a"],["Nous partons "+BL+" midi.","à"]];
+function genSAA(){const[q,a]=pick(AA);return{q:`${q}<span class="inst">Truc : si je peux dire « avait », j’écris « a ».</span>`,kind:'choice',opts:['a','à'],keep:1,ans:a}}
+const IMP={avoir:["avais","avais","avait","avions","aviez","avaient"],être:["étais","étais","était","étions","étiez","étaient"]},PRES={avoir:["ai","as","a","avons","avez","ont"],être:["suis","es","est","sommes","êtes","sont"]};
+function genSImp(){const v=pick(['avoir','être']),i=rnd(0,5),c=IMP[v][i];let pr=['Je','Tu',pick(['Il','Elle','On']),'Nous','Vous',pick(['Ils','Elles'])][i];if(i===0)pr="J'";
+  const opts=shuffle(uniq([c,PRES[v][i],...shuffle(uniq(IMP[v]).filter(x=>x!==c)).slice(0,2)]));
+  pr=pr.toLowerCase();return{q:`Hier, ${pr}${i===0?'':' '}${BL} <span class="hint">(${v})</span><span class="inst">À l’imparfait</span>`,kind:'choice',opts,ans:c}}
+function genSAdd(){const s=rnd(1,12),a=rnd(0,s),b=s-a;
+  if(Math.random()<.3)return{q:`${a} + ? = ${s}`,big:1,kind:'num',ans:b};return{q:`${a} + ${b} = ?`,big:1,kind:'num',ans:s}}
+function genSSub(){let a,b;
+  if(Math.random()<.65){for(let k=0;k<200;k++){a=rnd(200,999);b=rnd(100,a-10);if(a%10<b%10||Math.floor(a/10)%10<Math.floor(b/10)%10)break}
+    return{q:`${a} − ${b} = ?<span class="inst">Avec la planche à calculer : n’oublie pas l’emprunt!</span>`,big:1,kind:'num',ans:a-b}}
+  for(let k=0;k<200;k++){a=rnd(100,600);b=rnd(100,399);if(a+b<1000&&(a%10+b%10>=10||Math.floor(a/10)%10+Math.floor(b/10)%10>=10))break}
+  return{q:`${a} + ${b} = ?<span class="inst">N’oublie pas la retenue!</span>`,big:1,kind:'num',ans:a+b}}
+const ENG=[["courir","run"],["sauter","jump"],["nager","swim"],["lire","read"],["écrire","write"],["chanter","sing"],["danser","dance"],["manger","eat"],["dormir","sleep"],
+["marcher","walk"],["grimper","climb"],["dessiner","draw"],["jouer","play"],["cuisiner","cook"],["écouter","listen"],["boire","drink"],["lancer","throw"],["attraper","catch"]];
+function genSEng(){const[f,e]=pick(ENG),others=shuffle(ENG.filter(x=>x[1]!==e)).slice(0,3);
+  if(Math.random()<.5)return{q:`Comment dit-on « ${f} » en anglais?`,kind:'choice',opts:shuffle([e,...others.map(x=>x[1])]),ans:e};
+  return{q:`What does « to ${e} » mean?`,kind:'choice',opts:shuffle([f,...others.map(x=>x[0])]),ans:f}}
+const SEM_GENS=[genSDict,genSMots,genSEur,genSGN,genSAA,genSImp,genSAdd,genSSub,genSEng];
+function genSMix(){return pick(SEM_GENS)()}
+
 const ACT=[
 {id:'add',m:'math',t:'Additions',d:'Nombres jusqu’à 999',i:'+',g:genAdd},
 {id:'sub',m:'math',t:'Soustractions',d:'Avec et sans emprunt',i:'−',g:genSub},
@@ -384,7 +434,17 @@ const ACT=[
 {id:'homo',m:'fr',t:'Homophones',d:'a/à, et/est, son/sont…',i:'à',g:genHomo},
 {id:'conj',m:'fr',t:'Conjugaison',d:'Le présent',i:'je',g:genConj},
 {id:'acc',m:'fr',t:'Accords',d:'Féminin et pluriel',i:'s',g:genAccord},
-{id:'alpha',m:'fr',t:'Ordre alphabétique',d:'Quel mot vient en premier?',i:'abc',g:genAlpha}
+{id:'alpha',m:'fr',t:'Ordre alphabétique',d:'Quel mot vient en premier?',i:'abc',g:genAlpha},
+{id:'s_mix',m:'sem',t:'Mélange de la semaine',d:'Un peu de tout!',i:'★',g:genSMix},
+{id:'s_dict',m:'sem',t:'Dictée listes 5 et 6',d:'Mots de vocabulaire p. 62',i:'🔊',g:genSDict},
+{id:'s_mots',m:'sem',t:'Mes mots de vocabulaire',d:'Orthographe, un/une, sorte de mot',i:'Aa',g:genSMots},
+{id:'s_eur',m:'sem',t:'La règle de la peur',d:'eur, eure ou eurre? p. 104-106',i:'🐱',g:genSEur},
+{id:'s_gn',m:'sem',t:'Le groupe du nom',d:'GN p. 137',i:'GN',g:genSGN},
+{id:'s_aa',m:'sem',t:'Homophones a / à',d:'p. 143',i:'à',g:genSAA},
+{id:'s_imp',m:'sem',t:'Avoir et être',d:'À l’imparfait',i:'j’',g:genSImp},
+{id:'s_add',m:'sem',t:'Tables d’addition',d:'De 1 à 12, p. 167',i:'+',g:genSAdd},
+{id:'s_sub',m:'sem',t:'Planche à calculer',d:'Emprunt et retenue, p. 187',i:'−',g:genSSub},
+{id:'s_eng',m:'sem',t:'English: actions',d:'Vocabulary',i:'EN',g:genSEng}
 ];
 
 /* ---------- Voix ---------- */
@@ -463,7 +523,7 @@ function dash(){
   const totalC=Object.values(S.chests||{}).reduce((a,b)=>a+b,0),got=ACT.filter(a=>S.chests[a.id]).length,mine=SQ.filter(s=>S.owned.includes(s.id));
   const chestCard=a=>{const n=S.chests[a.id]||0;return `<div class="ch ${n?'':'locked'}">${chestSvg(a.id,!n)}<b>${a.t}</b>
     <small>${n?`${n} coffre${n>1?'s':''}`:'Pas encore'}</small><small>Meilleur : ${S.best[a.id]!=null?S.best[a.id]+'/10':'—'}</small></div>`};
-  app.innerHTML=`<h1>Mon tableau de bord</h1>
+  app.innerHTML=`<button class="backtop" type="button">← Retour aux exercices</button><h1>Mon tableau de bord</h1>
   <div class="stats">
     <div><span>★ ${S.stars}</span>étoiles</div>
     <div><span>${totalC}</span>coffre${totalC>1?'s':''}</div>
@@ -473,6 +533,7 @@ function dash(){
   <h2>Mes coffres (${got}/${ACT.length})</h2>
   <p class="lead">Un coffre de chaque couleur à collectionner. Fais 10 sur 10 pour l’obtenir!</p>
   <h3 class="sub">Mathématiques</h3><div class="ch-grid">${ACT.filter(a=>a.m==='math').map(chestCard).join('')}</div>
+  <h3 class="sub">Semaine 28 sept au 9 oct</h3><div class="ch-grid">${ACT.filter(a=>a.m==='sem').map(chestCard).join('')}</div>
   <h3 class="sub">Français</h3><div class="ch-grid">${ACT.filter(a=>a.m==='fr').map(chestCard).join('')}</div>
   <h2>Mes squishies (${mine.length}/${SQ.length})</h2>
   <div class="coll big">${SQ.map(s=>S.owned.includes(s.id)?`<figure>${squish(s)}<figcaption>${esc(s.n)}</figcaption></figure>`
@@ -491,7 +552,8 @@ function balloons(n=16){const reduce=matchMedia('(prefers-reduced-motion: reduce
   document.body.appendChild(fx);setTimeout(()=>fx.remove(),5500)}
 
 /* ---------- Coffre au trésor ---------- */
-const COFFRE={add:['#E63946','#FF6B76','#9E1F2A'],sub:['#2A9D8F','#45C4B5','#1B6B61'],mul1:['#3A86FF','#6FA8FF','#2259B3'],
+const COFFRE={s_mix:['#FF9F1C','#FFBF69','#B36B00'],s_dict:['#D62828','#F25C54','#8F1B1B'],s_mots:['#6A4C93','#8E6CC0','#45305F'],s_eur:['#8B5E34','#B08050','#5C3D20'],s_gn:['#0077B6','#3A9FD8','#004C75'],
+  s_aa:['#2B9348','#55BE6E','#1A5E2D'],s_imp:['#F15BB5','#F78ACB','#A33A7A'],s_add:['#00A6A6','#33C2C2','#006B6B'],s_sub:['#3D5A80','#6283AD','#283C56'],s_eng:['#C1121F','#E63946','#7D0B14'],add:['#E63946','#FF6B76','#9E1F2A'],sub:['#2A9D8F','#45C4B5','#1B6B61'],mul1:['#3A86FF','#6FA8FF','#2259B3'],
   mul2:['#7B2FF7','#A06BFF','#5019AD'],place:['#FF7A00','#FF9E40','#B35600'],comp:['#06A77D','#2DD4A4','#04714F'],
   prob:['#1D3557','#33548A','#0F1E33'],dict:['#F72585','#FF62A9','#AD1A5D'],homo:['#00B4D8','#4FD3EE','#007C96'],
   conj:['#8AC926','#A9E04E','#5E8C18'],acc:['#B5179E','#D94AC1','#7D0F6D'],alpha:['#8B4A1E','#A65C27','#5A2E12']};
@@ -717,7 +779,7 @@ function shop(){
   if(S.myst>0){for(let k=0;k<S.myst;k++){const pl=boxPool(BOX[1]);if(pl.length)S.mb.push({b:'classique',s:pick(pl).id});else S.gold+=35}S.myst=0;save();updStars()}
   const mine=SQ.filter(s=>S.owned.includes(s.id));
   const sec=(t,l,list)=>`<h2>${t}</h2>${l?`<p class="lead">${l}</p>`:''}<div class="sq-grid">${list.map(card).join('')}</div>`;
-  app.innerHTML=`<h1>Boutique de squishies</h1>
+  app.innerHTML=`<button class="backtop" type="button">← Retour aux exercices</button><h1>Boutique de squishies</h1>
   <p class="wallet">Tu as 🪙 ${S.gold} pièce${S.gold>1?'s':''} d’or</p>
   <p class="lead">Chaque bonne réponse donne 1 pièce. Un 10 sur 10 ouvre un coffre plein de pièces!</p>
   <h2>Ma collection (${mine.length}/${SQ.length})</h2>
@@ -808,6 +870,7 @@ function home(){
     <span><b>${a.t}</b><small>${a.d}</small>${S.best[a.id]!=null?`<small class="best">Meilleur : ${S.best[a.id]}/10</small>`:''}</span></button>`).join('');
   app.innerHTML=`<button class="who" id="who">👤 ${esc(S.name||'Joueur')} <span>· changer de joueur</span></button><h1>Salut${S.name?' '+esc(S.name):''}!</h1>
   <p class="lead">Choisis une activité. Chaque bonne réponse te donne une étoile et une pièce d’or.</p>
+  <h2><span class="dot" style="background:#E8730C"></span>Semaine 28 sept au 9 oct</h2><p class="lead" style="margin-top:-4px">Les devoirs de la semaine, tirés de ses feuilles.</p><div class="grid">${tiles('sem')}</div>
   <h2><span class="dot" style="background:var(--math)"></span>Mathématiques</h2><div class="grid">${tiles('math')}</div>
   <h2><span class="dot" style="background:var(--fr)"></span>Français</h2><div class="grid">${tiles('fr')}</div>
   <button class="shopbtn" id="shopbtn">${squish(SQ[0])}<span><b>Boutique de squishies</b>Échange tes pièces d’or · tu as 🪙 ${S.gold}</span></button>
@@ -881,7 +944,7 @@ function end(){const{act,score}=R;let coins=0;
 }
 
 function parents(){
-  app.innerHTML=`<h1>Coin des parents</h1>
+  app.innerHTML=`<button class="backtop" type="button">← Retour aux exercices</button><h1>Coin des parents</h1>
   <label for="nm">Prénom de l’enfant</label><input class="field" id="nm" value="${esc(S.name)}" maxlength="30">
   <label for="wd">Mots de dictée</label>
   <textarea class="field" id="wd">${esc(mots().join('\n'))}</textarea>
@@ -900,7 +963,7 @@ function parents(){
   $('#bk').onclick=home;window.scrollTo(0,0);
 }
 
-$('#home').onclick=home;$('#gold').onclick=shop;
+$('#home').onclick=home;document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.backtop'))home()});$('#gold').onclick=shop;
 $('#snd').onclick=()=>{S.sound=!S.sound;save();updSnd();if(S.sound)sfx('ok')};
 document.addEventListener('pointerdown',()=>ac(),{once:true});
 load();save();updStars();updSnd();home();cloudInit();
